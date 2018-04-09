@@ -22,8 +22,16 @@ The application has different parts in order to separate concerns:
 *start-db.sh and create-tables.sh are helpers to setup a local dev environment using docker*
 
 1. main.go starts the application
-2. notes.go represents an example "model" (like MVC or <https://en.wikipedia.org/wiki/Data_access_object>)
+2. db.go abstracts the persistence layer connection
+3. notes.go represents an example "model" (like MVC or <https://en.wikipedia.org/wiki/Data_access_object>)
 
 ## Basic Execution
 
-`go run main.go note.go`
+`go run main.go db.go note.go`
+
+## Basic Testing
+
+### Integration
+
+`go test -v -run TestMain`
+

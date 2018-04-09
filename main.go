@@ -1,19 +1,25 @@
 package main
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
 	"log"
-
-	_ "github.com/lib/pq"
-	// _ "github.com/go-sql-driver/mysql"
+	"os"
 )
 
 func main() {
 
-	db, err := NewDBConn("dbname=mydb host=127.0.0.1 user=myuser password=mypassword port=5432 sslmode=disable", "postgres")
+	dbhost := getEnvOrDefault("DB_HOST", "127.0.0.1")
+	dbport := getEnvOrDefault("DB_PORT", "5432")
+	dbssl := getEnvOrDefault("DB_SSL", "disable")
+	dbuser := getEnvOrDefault("DB_USERNAME", "myuser")
+	dbpassword := getEnvOrDefault("DB_PASSWORD", "mypassword")
+	dbname := getEnvOrDefault("DB_NAME", "mydb")
+	dbConnString := fmt.Sprintf("dbname=%s host=%s user=%s password=%s port=%s sslmode=%s",
+		dbname, dbhost, dbuser, dbpassword, dbport, dbssl)
+	db, dbVersion, err := NewDBConn(dbConnString, "postgres")
 	exitIfError(err)
+	fmt.Printf("Database Version: %s \n", dbVersion)
+
 	notes, err := getNotes(db)
 	fmt.Println(notes)
 	exitIfError(err)
@@ -26,33 +32,11 @@ func exitIfError(err error) {
 	}
 }
 
-// NewDBConn creates a new database client
-func NewDBConn(dbURL string, dbType string) (*sql.DB, error) {
-	var err error
-	var db *sql.DB
-
-	switch dbType {
-	case "postgres":
-		db, err = sql.Open("postgres", dbURL)
-	case "mysql":
-		db, err = sql.Open("mysql", dbURL)
-	default:
-		return nil, errors.New("Unknown Database type")
+func getEnvOrDefault(key, defaultValue string) string {
+	result := defaultValue
+	val, ok := os.LookupEnv(key)
+	if ok {
+		result = val
 	}
-	if err != nil {
-		return nil, err
-	}
-
-	// Verify db connection
-	err = db.Ping()
-	if err != nil {
-		return db, err
-	}
-	var DBversion string
-	err = db.QueryRow("SELECT version()").Scan(&DBversion)
-	if err != nil {
-		return db, err
-	}
-
-	return db, nil
+	return result
 }
