@@ -31,7 +31,26 @@ The application has different parts in order to separate concerns:
 
 ## Basic Testing
 
+Unit testing should not require external dependencies, the -short command can still skip "long" unit tests
+
+`go test` or `go test -v`
+
 ### Integration
 
-`go test -v -run TestMain`
+Since the integration tests expect to actively use a real database there is an environment variable that tells the system how to initialize
+
+> Otherwise the integration tests are skipped, no database needed!
+
+`TEST_INTEGRATION=true go test -v` (helpfully wrapped in integration_tests.sh)
+
+Environment variable and the default:
+
+    "TEST_DB_HOST", "127.0.0.1"
+    "TEST_DB_PORT", "5432"
+    "TEST_DB_SSL", "disable"
+    "TEST_DB_USERNAME", "myuser"
+    "TEST_DB_PASSWORD", "mypassword"
+    "TEST_DB_NAME", "mydb"
+
+
 

@@ -3,16 +3,41 @@ package main
 // integration tests that modify a database
 
 import (
+	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"testing"
 )
 
-// TestMain allows for custom setup and running instead of main  https://golang.org/pkg/testing/#hdr-Main
-func TestMain(m *testing.M) {
+var (
+	// TODO: remove the flag since the environment variable is possibly more portable/universal
+	databaseTest = flag.Bool("databaseTest", false, "run database integration tests")
+	testDB       *sql.DB
+)
 
-	// call flag.Parse() here if TestMain uses flags
+// TestMain allows for custom setup and running instead of main
+// https://golang.org/pkg/testing/#hdr-Main , http://cs-guy.com/blog/2015/01/test-main/ , https://www.philosophicalhacker.com/post/integration-tests-in-go/
+func TestMain(m *testing.M) {
+	flag.Parse()
+	// if *databaseTest {
+	if isIntegrationTest() {
+		setupTestDB()
+	}
+	exitCode := m.Run()
+	os.Exit(exitCode)
+}
+
+func isIntegrationTest() bool {
+	val, ok := os.LookupEnv("TEST_INTEGRATION")
+	if ok && val == "true" {
+		return true
+	}
+	return false
+}
+
+func setupTestDB() {
 	dbhost := getEnvOrDefault("TEST_DB_HOST", "127.0.0.1")
 	dbport := getEnvOrDefault("TEST_DB_PORT", "5432")
 	dbssl := getEnvOrDefault("TEST_DB_SSL", "disable")
@@ -22,44 +47,17 @@ func TestMain(m *testing.M) {
 	dbConnString := fmt.Sprintf("dbname=%s host=%s user=%s password=%s port=%s sslmode=%s",
 		dbname, dbhost, dbuser, dbpassword, dbport, dbssl)
 	db, dbVersion, err := NewDBConn(dbConnString, "postgres")
-
-	if err != nil {
-
-	}
-	if db == nil {
-
+	exitIfError(err)
+	fmt.Println("test database is setup:", dbVersion)
+	testDB = db
+	if testDB == nil {
+		log.Fatal(err)
 	}
 	if dbVersion == "" {
-
+		log.Fatal("ERROR: unable to get the test database version")
 	}
-
-	testText := "a test note"
-	testNote := Note{Text: testText}
-	preNotes, err := getNotes(db)
+	err = testDB.Ping()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("ERROR: unable to ping the test database")
 	}
-	if len(preNotes) != 0 {
-		log.Fatal("No notes should exist yet in the test")
-	}
-	noteID, err := createNote(db, testNote)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if noteID != 1 {
-		log.Fatal("A single test note should exist with id 1, instead received id", noteID)
-	}
-
-	postNotes, err := getNotes(db)
-	if len(postNotes) != 1 {
-		log.Fatal("A single test note should exist")
-	}
-	if postNotes[0].Text != testText {
-		log.Fatal("A test note text should be", testText, "but instead received", postNotes[0].Text)
-	}
-
-	exitCode := m.Run()
-
-	//clearDB()
-	os.Exit(exitCode)
 }
