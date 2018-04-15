@@ -15,27 +15,34 @@ Tags: go, golang, web, http, gorilla mux, postgres, pg, psql
     \d+ TABLENAME 
 
 
-## Basic Code
+## Running it
 
-The application has different parts in order to separate concerns:
+`./run.sh` (*which just executes something like go run main.go db.go note.go*)
 
-*start-db.sh and create-tables.sh are helpers to setup a local dev environment using docker*
 
-1. main.go starts the application
-2. db.go abstracts the persistence layer connection
-3. notes.go represents an example "model" (like MVC or <https://en.wikipedia.org/wiki/Data_access_object>)
+### Manually checking the web server
+`curl localhost:8080`
+> <html><body>index web page</body></html>
 
-## Basic Execution
+`curl -I -X GET localhost:8080`
 
-`go run main.go db.go note.go`
+    HTTP/1.1 200 OK
+    Date: Sun, 15 Apr 2018 17:48:47 GMT
+    Content-Length: 40
+    Content-Type: text/html; charset=utf-8
+
+
+### Manually checking the database
+`sudo ./psql.sh`
+
 
 ## Basic Testing
 
-Unit testing should not require external dependencies, the -short command can still skip "long" unit tests
+Unit testing should not require external dependencies, *the -short command can still skip "long" unit tests*
 
 `go test` or `go test -v`
 
-### Integration
+### Integration Testing
 
 Since the integration tests expect to actively use a real database there is an environment variable that tells the system how to initialize
 
@@ -51,6 +58,21 @@ Environment variable and the default:
     "TEST_DB_USERNAME", "myuser"
     "TEST_DB_PASSWORD", "mypassword"
     "TEST_DB_NAME", "mydb"
+
+
+
+## Code Structure
+
+The application has different parts in order to separate concerns:
+
+*start-db.sh and create-tables.sh are helpers to setup a local dev environment using docker*
+
+0. tables.sql is the database schema
+1. main.go initializes and starts the application
+2. db.go abstracts the persistence layer connection
+3. notes.go represents an example "model" (like MVC or <https://en.wikipedia.org/wiki/Data_access_object>)
+4. router.go manage the routes to the web application
+5. controller-.go are the definitions of handlers for each route
 
 
 
