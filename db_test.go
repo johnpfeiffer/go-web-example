@@ -13,7 +13,7 @@ func TestIntegrationNotesCreate(t *testing.T) {
 		t.Skip()
 	}
 	// CLEAN STATE
-	err := resetTable(testDB, NoteTable, NoteTableSequence)
+	err := resetTable(t, testDB, NoteTable, NoteTableSequence)
 	exitIfError(err)
 
 	preNotes, err := getNotes(testDB)
@@ -26,11 +26,11 @@ func TestIntegrationNotesCreate(t *testing.T) {
 	testText := "a test note"
 	testNote := Note{Text: testText}
 	noteID, err := createNote(testDB, testNote)
-	assertItemID(noteID, 1, err, "A single test note should exist with id 1, instead received id:"+strconv.Itoa(noteID))
+	assertItemID(t, noteID, 1, err, "A single test note should exist with id 1, instead received id:"+strconv.Itoa(noteID))
 
 	testNote.Text = testNote.Text + " second"
 	noteID2, err := createNote(testDB, testNote)
-	assertItemID(noteID2, 2, err, "A second test note should exist with id 2, instead received id:"+strconv.Itoa(noteID2))
+	assertItemID(t, noteID2, 2, err, "A second test note should exist with id 2, instead received id:"+strconv.Itoa(noteID2))
 
 	// THEN
 	postNotes, err := getNotes(testDB)
@@ -42,20 +42,22 @@ func TestIntegrationNotesCreate(t *testing.T) {
 	}
 
 	// CLEANUP
-	err = resetTable(testDB, NoteTable, NoteTableSequence)
+	err = resetTable(t, testDB, NoteTable, NoteTableSequence)
 	exitIfError(err)
 }
 
 // Helper functions
 
-func assertItemID(id, expected int, err error, errorMessage string) {
+func assertItemID(t *testing.T, id, expected int, err error, errorMessage string) {
+	t.Helper()
 	exitIfError(err)
 	if id != expected {
 		log.Fatal(errorMessage)
 	}
 }
 
-func resetTable(db *sql.DB, name, sequenceName string) error {
+func resetTable(t *testing.T, db *sql.DB, name, sequenceName string) error {
+	t.Helper()
 	// Truncate is more efficient but does not work if a table contains foreign key(s)
 	command := fmt.Sprintf("DELETE FROM %s", name)
 	_, err := db.Exec(command)

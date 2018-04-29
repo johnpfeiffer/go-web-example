@@ -1,6 +1,6 @@
 Title: Leveraging Gorilla Mux for a Webserver with Postgres
 Date: 2018-02-26 19:19
-Tags: go, golang, web, http, gorilla mux, postgres, pg, psql
+Tags: go, golang, web, gorilla mux, postgres, pg, psql, http, httptest
 
 ## Prerequisites
 
@@ -21,8 +21,8 @@ Tags: go, golang, web, http, gorilla mux, postgres, pg, psql
 
 
 ### Manually checking the web server
-`curl localhost:8080`
-> <html><body>index web page</body></html>
+    curl localhost:8080
+        <html><body>index web page</body></html>
 
 `curl -I -X GET localhost:8080`
 
@@ -31,6 +31,8 @@ Tags: go, golang, web, http, gorilla mux, postgres, pg, psql
     Content-Length: 40
     Content-Type: text/html; charset=utf-8
 
+
+`curl -X POST --header "Content-Type: application/json" --data '{"note":"some note text"}' localhost:8080/note`
 
 ### Manually checking the database
 `sudo ./psql.sh`
@@ -48,9 +50,9 @@ Since the integration tests expect to actively use a real database there is an e
 
 > Otherwise the integration tests are skipped, no database needed!
 
-`TEST_INTEGRATION=true go test -v` (helpfully wrapped in integration_tests.sh)
+`./integration_tests.sh` *(or expandeded into `TEST_INTEGRATION=true go test -v`)*
 
-Environment variable and the default:
+Environment variables (for overrides) and the default:
 
     "TEST_DB_HOST", "127.0.0.1"
     "TEST_DB_PORT", "5432"
@@ -58,7 +60,6 @@ Environment variable and the default:
     "TEST_DB_USERNAME", "myuser"
     "TEST_DB_PASSWORD", "mypassword"
     "TEST_DB_NAME", "mydb"
-
 
 
 ## Code Structure
@@ -73,6 +74,6 @@ The application has different parts in order to separate concerns:
 3. notes.go represents an example "model" (like MVC or <https://en.wikipedia.org/wiki/Data_access_object>)
 4. router.go manage the routes to the web application
 5. controller-.go are the definitions of handlers for each route
-
+6. _test.go are test files
 
 
