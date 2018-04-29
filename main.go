@@ -19,7 +19,7 @@ func main() {
 	fmt.Println(notes)
 	exitIfError(err)
 
-	r := router()
+	r := router(db)
 	http.Handle("/", r)
 	// TODO: env variable to set the port
 	// TODO: more custom control over handling timeouts

@@ -12,15 +12,8 @@ func TestIntegrationNotesCreate(t *testing.T) {
 	if !isIntegrationTest() {
 		t.Skip()
 	}
-	// CLEAN STATE
-	err := resetTable(t, testDB, NoteTable, NoteTableSequence)
-	exitIfError(err)
-
-	preNotes, err := getNotes(testDB)
-	exitIfError(err)
-	if len(preNotes) != 0 {
-		log.Fatal("No notes should exist yet in the test")
-	}
+	// GIVEN
+	cleanStart(t)
 
 	// WHEN
 	testText := "a test note"
@@ -53,6 +46,16 @@ func assertItemID(t *testing.T, id, expected int, err error, errorMessage string
 	exitIfError(err)
 	if id != expected {
 		log.Fatal(errorMessage)
+	}
+}
+
+func cleanStart(t *testing.T) {
+	err := resetTable(t, testDB, NoteTable, NoteTableSequence)
+	exitIfError(err)
+	preNotes, err := getNotes(testDB)
+	exitIfError(err)
+	if len(preNotes) != 0 {
+		log.Fatal("No notes should exist yet in the test")
 	}
 }
 

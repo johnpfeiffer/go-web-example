@@ -4,7 +4,6 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,15 +13,8 @@ func TestIntegrationGetIndex(t *testing.T) {
 	if !isIntegrationTest() {
 		t.Skip()
 	}
-	// GIVEN CLEAN STATE
-	err := resetTable(t, testDB, NoteTable, NoteTableSequence)
-	exitIfError(err)
-
-	preNotes, err := getNotes(testDB)
-	exitIfError(err)
-	if len(preNotes) != 0 {
-		log.Fatal("No notes should exist yet in the test")
-	}
+	// GIVEN
+	cleanStart(t)
 
 	// WHEN
 
@@ -39,7 +31,7 @@ func TestIntegrationGetIndex(t *testing.T) {
 	assertResponseBody(t, defaultIndexResponse, string(body))
 
 	// CLEANUP
-	err = resetTable(t, testDB, NoteTable, NoteTableSequence)
+	err := resetTable(t, testDB, NoteTable, NoteTableSequence)
 	exitIfError(err)
 }
 
