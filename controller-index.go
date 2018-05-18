@@ -24,6 +24,7 @@ func NoteHandlerGET(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	notes, err := getNotes(db)
 	// TODO: better error handling
 	exitIfError(err)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	if len(notes) < 1 {
 		fmt.Fprintf(w, "{}")
