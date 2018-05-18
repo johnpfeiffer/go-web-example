@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -23,9 +24,14 @@ func NoteHandlerGET(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	notes, err := getNotes(db)
 	// TODO: better error handling
 	exitIfError(err)
-	s := fmt.Sprintf("%v", notes)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, s)
+	if len(notes) < 1 {
+		fmt.Fprintf(w, "{}")
+		return
+	}
+	theJSON, err := json.MarshalIndent(notes, "", "  ")
+	exitIfError(err)
+	fmt.Fprintf(w, string(theJSON))
 }
 
 // NoteHandlerPOST inserts a note
@@ -33,9 +39,13 @@ func NoteHandlerPOST(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	log.Println("received POST")
 	defer r.Body.Close()
 	responseData, err := ioutil.ReadAll(r.Body)
+	// TODO: better error handling
 	exitIfError(err)
 
-	n := Note{Text: string(responseData)}
+	var n Note
+	err = json.Unmarshal(responseData, &n)
+	exitIfError(err)
+
 	noteID, err := createNote(db, n)
 	log.Printf("inserted note with id: %d", noteID)
 }
