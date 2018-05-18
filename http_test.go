@@ -42,7 +42,8 @@ func TestIntegrationGetIndex(t *testing.T) {
 func executeRequest(t *testing.T, req *http.Request) *httptest.ResponseRecorder {
 	t.Helper()
 	w := httptest.NewRecorder()
-	router().ServeHTTP(w, req)
+	r := router(testDB)
+	r.ServeHTTP(w, req)
 	return w
 }
 
