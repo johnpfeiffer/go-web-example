@@ -20,7 +20,7 @@ func TestGetIndex(t *testing.T) {
 	response := w.Result()
 	assertResponseCode(t, http.StatusOK, response.StatusCode)
 	body, _ := ioutil.ReadAll(response.Body)
-	assertResponseBody(t, defaultIndexResponse, string(body))
+	assertString(t, `<html><body>index web page</body></html>`, string(body))
 }
 
 func TestIntegrationGetIndex(t *testing.T) {
@@ -37,7 +37,7 @@ func TestIntegrationGetIndex(t *testing.T) {
 	// THEN
 	assertResponseCode(t, http.StatusOK, response.Code)
 	body, _ := ioutil.ReadAll(response.Body)
-	assertResponseBody(t, defaultIndexResponse, string(body))
+	assertString(t, "<html><body>index web page</body></html>", string(body))
 
 	// CLEANUP
 	err := resetTable(t, testDB, NoteTable, NoteTableSequence)
@@ -68,8 +68,8 @@ func TestIntegrationPostNote(t *testing.T) {
 	responseGet := executeRequest(t, reqGet)
 
 	// THEN
-	assertResponseCode(t, http.StatusOK, response.Code)
 	assertResponseCode(t, http.StatusOK, responseGet.Code)
+	assertString(t, "application/json; charset=utf-8", responseGet.Result().Header.Get("Content-Type"))
 	body, _ := ioutil.ReadAll(responseGet.Body)
 
 	now := time.Now().UTC()
@@ -102,6 +102,7 @@ func assertResponseCode(t *testing.T, expected, result int) {
 		t.Errorf("Expected response code: %d ,Received: %d\n", expected, result)
 	}
 }
+
 func assertResponseBodyStartsWith(t *testing.T, expected, result string) {
 	t.Helper()
 	if strings.HasPrefix(result, expected) {
@@ -110,9 +111,9 @@ func assertResponseBodyStartsWith(t *testing.T, expected, result string) {
 	t.Errorf("Expected response body starts with: \n%s\nInstead received: \n%s\n", expected, result)
 }
 
-func assertResponseBody(t *testing.T, expected, result string) {
+func assertString(t *testing.T, expected, result string) {
 	t.Helper()
 	if expected != result {
-		t.Errorf("Expected response body: \n%s\nInstead received: \n%s\n", expected, result)
+		t.Errorf("Expected: \n%s\nInstead received: \n%s\n", expected, result)
 	}
 }
